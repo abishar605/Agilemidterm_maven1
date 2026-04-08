@@ -1,0 +1,163 @@
+✅ Maven Project Pipeline – Step by Step
+🔹 Step 1: Create Maven Project Structure (VS Code)
+Open VS Code
+Create a folder:
+simple-maven-app
+Inside it, create this structure:
+simple-maven-app
+ ├── src
+ │   ├── main
+ │   │   └── java
+ │   │       └── com
+ │   │           └── example
+ │   │               └── App.java
+ │   ├── test
+ │       └── java
+ │           └── com
+ │               └── example
+ │                   └── AppTest.java
+ └── pom.xml
+🔹 Step 2: Add Code Files
+📌 App.java
+package com.example;
+public class App {
+ public int add(int a, int b) {
+ return a + b;
+ }
+}
+
+📌 AppTest.java
+package com.example;
+import org.junit.Test;
+import static org.junit.Assert.*;
+public class AppTest {
+ @Test
+ public void testAdd() {
+ App app = new App();
+ assertEquals(5, app.add(2, 3));
+ }
+}
+📌 pom.xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>simple-maven-app</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Simple Maven App</name>
+
+    <!-- Properties -->
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <!-- Dependencies -->
+    <dependencies>
+        <!-- JUnit Dependency -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- Build Plugins -->
+    <build>
+        <plugins>
+            <!-- Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+            </plugin>
+
+            <!-- Surefire Plugin (for running tests) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+           
+
+</project>
+
+Open terminal:
+
+mvn -v
+🔹 Step 4: Run Maven Project
+
+Inside project folder:
+
+mvn clean test
+
+✅ Expected Output:
+
+BUILD SUCCESS
+🔹 Step 5: Push to GitHub
+Create repo in GitHub
+Name:
+simple-maven-app
+Run commands:
+git init
+git add .
+git commit -m "Initial Maven Project"
+git branch -M main
+git remote add origin https://github.com/your-username/simple-maven-app.git
+git push -u origin main
+🔹 Step 6: Setup Jenkins
+
+Open:
+👉 Jenkins
+
+Configure Maven:
+Go to Manage Jenkins → Tools
+Add Maven:
+Name: M3
+Install automatically ✔
+🔹 Step 7: Create Jenkins Pipeline
+Click New Item
+Name:
+Maven-CI-Pipeline
+Select Pipeline
+📌 Pipeline Script
+pipeline {
+ agent any
+ tools {
+ maven 'M3'
+ }
+ stages {
+ stage('Checkout Git') {
+ steps {
+ git branch: 'main',
+ url: 'https://github.com/abishar605/simple-maven-appnisha.git'
+ }
+ }
+ stage('Build and Test') {
+ steps {
+ bat 'mvn clean test'
+ }
+ }
+ }
+}
+🔹 Step 8: Build Pipeline
+Click Build Now
+Open Console Output
+
+✅ You should see:
+
+BUILD SUCCESS
+🎯 Final Flow (Simple Understanding)
+VS Code → Maven Project → GitHub → Jenkins → Build & Test
