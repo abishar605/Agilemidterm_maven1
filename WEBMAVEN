@@ -1,0 +1,201 @@
+🟢 STEP 1: Create Project Folder
+Go to Desktop
+Create new folder:
+WEBAGILE
+Open this folder in VS Code
+🟢 STEP 2: Create index.html
+Right click → New File → index.html
+Paste:
+<!DOCTYPE html>
+<html>
+<head>
+<title>CI/CD Demo</title>
+<style>
+body{
+text-align:center;
+font-family:Times New Roman;
+background-color:#af0d0d;
+}
+h1{
+color:#0ef777;
+}
+</style>
+</head>
+<body>
+<h1>CI/CD Pipeline Working</h1>
+<h2>Deployed using Jenkins + Docker + Kubernetes</h2>
+<p>This webpage is automatically deployed using a CI/CD pipeline.</p>
+</body>
+</html>
+
+👉 Save
+
+🟢 STEP 3: Create Dockerfile
+New File → Dockerfile
+Paste:
+FROM nginx:latest
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80
+
+👉 Save
+
+🟢 STEP 4: Build Docker Image
+
+Open terminal in that folder:
+
+docker build -t html-demo .
+🟢 STEP 5: Run Docker (Test)
+docker run -p 8081:80 html-demo
+
+👉 Open browser:
+
+http://localhost:8081
+
+✅ If page opens → continue
+
+🟢 STEP 6: Create Docker Hub Repo
+
+Go to 👉 Docker Hub
+
+Login
+Click Repositories
+Click Create Repository
+Enter:
+Name → html-demo
+Public ✅
+Click Create
+🟢 STEP 7: Push Image to Docker Hub
+
+Run in terminal:
+
+docker tag html-demo abishar26/html-demo
+docker login
+docker push abishar26/html-demo
+🟢 STEP 8: Create deployment.yaml
+New File → deployment.yaml
+Paste:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: html-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: html-demo
+  template:
+    metadata:
+      labels:
+        app: html-demo
+    spec:
+      containers:
+      - name: html-demo
+        image: AbishaR26/html-demo:latest
+        ports:
+        - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: html-demo-service
+spec:
+  type: NodePort
+  selector:
+    app: html-demo
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30010
+🟢 STEP 9: Start Kubernetes
+minikube start
+
+Check:
+
+kubectl get nodes
+🟢 STEP 10: Deploy to Kubernetes
+kubectl apply -f deployment.yaml
+
+Check:
+
+kubectl get pods
+
+👉 Wait until Running
+
+🟢 STEP 11: Open Website
+minikube service html-demo-service
+
+✅ Browser opens 🎉
+
+🟢 STEP 12: Push Code to GitHub
+
+Go to 👉 GitHub
+
+Create repo → ci-cd-demo
+
+Then run:
+
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/yourusername/ci-cd-demo.git
+git push -u origin main
+🟢 STEP 13: Setup Jenkins
+
+Open:
+
+http://localhost:8080
+🔹 Create Pipeline
+Click New Item
+Name → pipeline
+Select Pipeline
+Click OK
+🔹 Paste this (EDIT USERNAME + GITHUB LINK)
+pipeline {
+ agent any
+
+ environment {
+ DOCKER_IMAGE = "AbishaR26/html-demo"
+ }
+
+ stages {
+
+ stage('Clone Code') {
+ steps {
+ git branch: 'main',
+ url: 'https://github.com/yourusername/ci-cd-demo.git'
+ }
+ }
+
+ stage('Build Docker Image') {
+ steps {
+ bat 'docker build -t %DOCKER_IMAGE% .'
+ }
+ }
+
+ stage('Push Image') {
+ steps {
+ bat 'docker push %DOCKER_IMAGE%'
+ }
+ }
+
+ stage('Deploy to Kubernetes') {
+ steps {
+ bat 'kubectl apply -f deployment.yaml'
+ }
+ }
+
+ }
+}
+🟢 STEP 14: Run Pipeline
+
+Click:
+
+Build Now
+🎉 FINAL RESULT
+
+✔ Website deployed
+✔ Docker image created
+✔ Kubernetes running
+✔ Jenkins automated everything
