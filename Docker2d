@@ -129,7 +129,7 @@ pipeline {
 
         stage('Clone Code') {
             steps {
-                git 'https://github.com/YOUR_USERNAME/ABISHA_AGILE.git'
+                git branch: 'main', url: 'https://github.com/abishar605/ABISHA_AGILE.git'
             }
         }
 
@@ -141,16 +141,11 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                bat 'docker run -d -p 8082:80 static-app'
+                bat 'docker rm -f static-container || true'
+                bat 'docker run -d -p 8081:80 --name static-container static-app'
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                bat 'kubectl apply -f deployment.yaml'
-                bat 'kubectl apply -f service.yaml'
-            }
-        }
     }
 }
 
