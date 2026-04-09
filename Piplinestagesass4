@@ -1,0 +1,316 @@
+STEP 1: Install Required Software
+✅ Install these first:
+Docker Desktop
+Java JDK 17
+Maven
+Git
+Jenkins
+💻 Verify Installation
+Open Command Prompt / PowerShell and run:
+🔹 Check Java
+Copy code
+
+java -version
+✅ Output:
+Copy code
+
+java version "17.x.x"
+🔹 Check Maven
+Copy code
+
+mvn -version
+✅ Output:
+Copy code
+
+Apache Maven 3.x.x
+🔹 Check Docker
+Copy code
+
+docker --version
+✅ Output:
+Copy code
+
+Docker version 24.x.x
+🐳 STEP 2: Enable Kubernetes in Docker
+Open Docker Desktop
+Go to ⚙ Settings
+Click Kubernetes
+✅ Enable Kubernetes
+Click Apply & Restart
+⏳ Wait 2–5 minutes
+✅ Verify Kubernetes
+Copy code
+
+kubectl get nodes
+✅ Output:
+Copy code
+
+NAME             STATUS   ROLES           AGE   VERSION
+docker-desktop   Ready    control-plane   ...
+⚙️ STEP 3: Run Jenkins
+Run this command:
+Copy code
+
+docker run -d --name jenkins \
+-p 8080:8080 -p 50000:50000 \
+-v jenkins_home:/var/jenkins_home \
+-v /var/run/docker.sock:/var/run/docker.sock \
+jenkins/jenkins:lts
+🌐 Open Jenkins
+Go to:
+Copy code
+
+http://localhost:8080
+🔑 Unlock Jenkins
+Run:
+Copy code
+
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+Paste password → Continue
+✅ Install Plugins
+Select: ✔ Install Suggested Plugins
+🔌 STEP 4: Install Required Jenkins Plugins
+Go to: 👉 Manage Jenkins → Plugins
+Install:
+Docker
+Docker Pipeline
+Kubernetes CLI
+☕ STEP 5: Create Java Project
+Create folder:
+Copy code
+
+simple-java-app
+📄 Create App.java
+Copy code
+
+public class App {
+    public static void main(String[] args) throws Exception {
+        System.out.println("Java CI/CD Application Started...");
+        while (true) {
+            Thread.sleep(5000);
+            System.out.println("Hello from Java CI/CD Pipeline!");
+        }
+    }
+}
+📄 Create pom.xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.demo</groupId>
+    <artifactId>simple-java-app</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <name>Simple Java App</name>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+</project>
+▶️ STEP 6: Build Locally
+Go inside project folder:
+Copy code
+
+cd simple-java-app
+mvn clean package
+✅ Output:
+Copy code
+
+BUILD SUCCESS
+📁 New file created:
+Copy code
+
+target/simple-java-app-1.0.jar
+🐳 STEP 7: Create Dockerfile
+Create file:
+Copy code
+
+Dockerfile
+Paste:
+Copy code
+
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+COPY target/simple-java-app-1.0.jar app.jar
+CMD ["java", "-jar", "app.jar"]
+🔥 Build Docker Image
+Copy code
+
+docker build -t yourusername/java-app .
+✅ Output:
+Copy code
+
+Successfully built xxxx
+Successfully tagged yourusername/java-app
+▶️ Run Container (Test)
+Copy code
+
+docker run yourusername/java-app
+✅ Output:
+Copy code
+
+Java CI/CD Application Started...
+Hello from Java CI/CD Pipeline!
+Hello from Java CI/CD Pipeline!
+🌐 STEP 8: Push to GitHub
+Copy code
+
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/yourusername/simple-java-app.git
+git push -u origin main
+☸️ STEP 9: Create Kubernetes File
+Create:
+Copy code
+
+deployment.yaml
+Paste:
+Copy code
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: java-app
+  template:
+    metadata:
+      labels:
+        app: java-app
+    spec:
+      containers:
+      - name: java-app
+        image: yourusername/java-app:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: java-service
+spec:
+  type: NodePort
+  selector:
+    app: java-app
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30008
+🚀 Deploy Manually (Test)
+Copy code
+
+kubectl apply -f deployment.yaml
+✅ Verify
+Copy code
+
+kubectl get pods
+Output:
+Copy code
+
+java-app-xxxx   Running
+java-app-xxxx   Running
+🔐 STEP 10: Add DockerHub Credentials in Jenkins
+Go: 👉 Manage Jenkins → Credentials
+Add:
+Field
+Value
+Username
+your docker username
+Password
+your docker password
+ID
+dockerhub-creds
+🔄 STEP 11: Create Jenkins Pipeline
+👉 New Item → Pipeline → Name: Java-CICD
+📜 Pipeline Code
+Copy code
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "yourusername/java-app:latest"
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/yourusername/simple-java-app.git'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                bat 'mvn clean package'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                bat "docker build -t %DOCKER_IMAGE% ."
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat """
+                        docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                        docker push %DOCKER_IMAGE%
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                bat 'kubectl apply -f deployment.yaml'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'CI/CD Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check logs.'
+        }
+    }
+}
+▶️ STEP 12: Run Pipeline
+Click: 👉 Build Now
+✅ FINAL OUTPUT (IMPORTANT)
+Console will show:
+Copy code
+
+Cloning repository...
+BUILD SUCCESS
+Successfully built Docker image
+Pushed to DockerHub
+deployment.apps/java-app created
+service/java-service created
+CI/CD Pipeline executed successfully!
+📊 STEP 13: Verify Final Deployment
+Check services:
+Copy code
+
+kubectl get svc
+Output:
+Copy code
+
+java-service   NodePort   ...   30008
