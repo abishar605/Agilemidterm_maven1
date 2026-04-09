@@ -1,0 +1,200 @@
+FULL CI/CD PROJECT (START → END)
+🟢 PART 1: CREATE PROJECT (VS CODE)
+Step 1: Open Visual Studio Code
+
+Create folder:
+
+ABISHA_AGILE
+Step 2: Create Files
+
+Inside folder, create:
+
+1. index.html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CI/CD Demo</title>
+<style>
+body{
+text-align:center;
+font-family:Arial;
+background-color:#222;
+color:white;
+}
+h1{ color:#00ffcc; }
+</style>
+</head>
+<body>
+
+<h1>CI/CD Pipeline Working</h1>
+<h2>Deployed using Jenkins + Docker + Kubernetes</h2>
+
+<h3>Price List</h3>
+<ul>
+<li>Apple - ₹100</li>
+<li>Orange - ₹80</li>
+<li>Mango - ₹120</li>
+<li>Banana - ₹50</li>
+</ul>
+
+</body>
+</html>
+2. Dockerfile
+FROM nginx:latest
+COPY index.html /usr/share/nginx/html/index.html
+3. deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: static-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: static-app
+  template:
+    metadata:
+      labels:
+        app: static-app
+    spec:
+      containers:
+      - name: static-app
+        image: static-app
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+4. service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: static-service
+spec:
+  type: NodePort
+  selector:
+    app: static-app
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30007
+🟢 PART 2: PUSH EVERYTHING TO GITHUB
+Step 3: Initialize Git
+
+Open terminal in your folder:
+
+git init
+git add .
+git commit -m "Initial commit - all project files"
+Step 4: Create Repo in GitHub
+Go to GitHub
+Click New Repository
+Name: ABISHA_AGILE
+Step 5: Connect & Push
+git remote add origin https://github.com/YOUR_USERNAME/ABISHA_AGILE.git
+git branch -M main
+git push -u origin main
+✅ Step 6: Modify Code (IMPORTANT FOR CI)
+
+Edit index.html:
+
+<h1>Updated CI/CD Pipeline</h1>
+
+Then push again:
+
+git add .
+git commit -m "Updated UI for CI trigger"
+git push
+🟢 PART 3: DOCKER
+Step 7: Install Docker
+Step 8: Build Image
+docker build -t static-app .
+Step 9: Run Container
+docker run -d -p 8081:80 static-app
+
+Open:
+
+http://localhost:8081
+🟢 PART 4: JENKINS (CI/CD PIPELINE)
+Step 10: Install Jenkins
+
+Open:
+
+http://localhost:8080
+Step 11: Create Pipeline Job
+New Item → Pipeline → OK
+Step 12: Paste Pipeline Code
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Clone Code') {
+            steps {
+                git 'https://github.com/YOUR_USERNAME/ABISHA_AGILE.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                bat 'docker build -t static-app .'
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                bat 'docker run -d -p 8082:80 static-app'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                bat 'kubectl apply -f deployment.yaml'
+                bat 'kubectl apply -f service.yaml'
+            }
+        }
+    }
+}
+
+👉 Click Build Now
+👉 See Stage View (important)
+
+🟢 PART 5: KUBERNETES
+Step 13: Install Minikube
+minikube start
+Step 14: Connect Docker to Minikube
+minikube -p minikube docker-env --shell powershell | Invoke-Expression
+Step 15: Build Image Again
+docker build -t static-app .
+Step 16: Deploy
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+Step 17: Check Pods
+kubectl get pods
+
+👉 Must show:
+
+Running
+Step 18: Open Website
+minikube ip
+
+Open:
+
+http://<MINIKUBE-IP>:30007
+🎯 FINAL RESULT
+
+You have:
+
+✔ Static webpage (price list)
+✔ Code in GitHub
+✔ CI trigger (commit updates)
+✔ Jenkins pipeline (stage view)
+✔ Docker container
+✔ Kubernetes deployment
+
+🏁 FINAL SUMMARY (VERY IMPORTANT)
+Flow:
+Code → GitHub
+Jenkins → Pulls code
+Docker → Builds image
+Kubernetes → Deploys
+Browser → Shows output
+🎓 YOU ARE DONE (100%)
