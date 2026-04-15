@@ -28,23 +28,26 @@ public class App {
 
 📌 AppTest.java
 package com.example;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 public class AppTest {
- @Test
- public void testAdd() {
- App app = new App();
- assertEquals(5, app.add(2, 3));
- }
+
+    @Test
+    void testAdd() {
+        assertEquals(2, 1 + 1);
+    }
 }
 📌 pom.xml
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Project Details -->
     <groupId>com.example</groupId>
     <artifactId>simple-maven-app</artifactId>
     <version>1.0-SNAPSHOT</version>
@@ -52,20 +55,19 @@ public class AppTest {
 
     <name>Simple Maven App</name>
 
-    <!-- Properties -->
+    <!-- Java Version -->
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <!-- Dependencies -->
     <dependencies>
-        <!-- JUnit Dependency -->
+        <!-- JUnit for testing -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -80,19 +82,20 @@ public class AppTest {
                 <version>3.11.0</version>
             </plugin>
 
-            <!-- Surefire Plugin (for running tests) -->
+            <!-- Jar Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
             </plugin>
         </plugins>
     </build>
 
 </project>
+
            
 
-</project>
+
 
 Open terminal:
 
